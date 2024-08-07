@@ -173,7 +173,9 @@ func resourceGithubTeamCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(strconv.FormatInt(githubTeam.GetID(), 10))
-	return resourceGithubTeamRead(d, meta)
+	// [PG] Unnecessary to call the API again after creating the team
+	// return resourceGithubTeamRead(d, meta)
+	return nil
 }
 
 func resourceGithubTeamRead(d *schema.ResourceData, meta interface{}) error {
@@ -183,7 +185,7 @@ func resourceGithubTeamRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	client := meta.(*Owner).v3client
-	orgId := meta.(*Owner).id
+	// orgId := meta.(*Owner).id
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -194,7 +196,9 @@ func resourceGithubTeamRead(d *schema.ResourceData, meta interface{}) error {
 		ctx = context.WithValue(ctx, ctxEtag, d.Get("etag").(string))
 	}
 
-	team, resp, err := client.Teams.GetTeamByID(ctx, orgId, id)
+	// [PG] Use the customized function to get team
+	// team, resp, err := client.Teams.GetTeamByID(ctx, orgId, id)
+	team, resp, err := pgGetTeamByTeamId(ctx, client, id)
 	if err != nil {
 		if ghErr, ok := err.(*github.ErrorResponse); ok {
 			if ghErr.Response.StatusCode == http.StatusNotModified {
@@ -368,7 +372,6 @@ func resourceGithubTeamImport(d *schema.ResourceData, meta interface{}) ([]*sche
 }
 
 func removeDefaultMaintainer(teamSlug string, meta interface{}) error {
-
 	client := meta.(*Owner).v3client
 	orgName := meta.(*Owner).name
 	v4client := meta.(*Owner).v4client

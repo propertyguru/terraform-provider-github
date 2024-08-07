@@ -196,15 +196,17 @@ func getTeamID(teamIDString string, meta interface{}) (int64, error) {
 	// id of the team it is referring to.
 	ctx := context.Background()
 	client := meta.(*Owner).v3client
-	orgName := meta.(*Owner).name
+	// orgName := meta.(*Owner).name
 
 	teamId, parseIntErr := strconv.ParseInt(teamIDString, 10, 64)
 	if parseIntErr == nil {
 		return teamId, nil
 	}
 
-	// The given id not an integer, assume it is a team slug
-	team, _, slugErr := client.Teams.GetTeamBySlug(ctx, orgName, teamIDString)
+	// [PG] Use the customized function to get team
+	// // The given id not an integer, assume it is a team slug
+	// team, _, slugErr := client.Teams.GetTeamBySlug(ctx, orgName, teamIDString)
+	team, _, slugErr := pgGetTeamByTeamSlug(ctx, client, teamIDString)
 	if slugErr != nil {
 		return -1, errors.New(parseIntErr.Error() + slugErr.Error())
 	}
