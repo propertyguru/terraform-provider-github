@@ -14,7 +14,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/google/go-github/v62/github"
+	"github.com/google/go-github/v66/github"
 )
 
 type PGGetAllTeamsResponse struct {
