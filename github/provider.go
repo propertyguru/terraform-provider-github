@@ -427,9 +427,10 @@ func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
 
 		parallelRequests := d.Get("parallel_requests").(bool)
 
-		if parallelRequests && isGithubDotCom {
-			return nil, wrapErrors([]error{fmt.Errorf("parallel_requests cannot be true when connecting to public github")})
-		}
+		// [PG] Disable this check to allow parallel invocation of GitHub API
+		// if parallelRequests && isGithubDotCom {
+		// 	return nil, wrapErrors([]error{fmt.Errorf("parallel_requests cannot be true when connecting to public github")})
+		// }
 		log.Printf("[DEBUG] Setting parallel_requests to %t", parallelRequests)
 
 		config := Config{
