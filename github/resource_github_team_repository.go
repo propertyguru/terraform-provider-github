@@ -97,7 +97,9 @@ func resourceGithubTeamRepositoryCreate(d *schema.ResourceData, meta interface{}
 
 	d.SetId(buildTwoPartID(strconv.FormatInt(teamId, 10), repoName))
 
-	return resourceGithubTeamRepositoryRead(d, meta)
+	// [PG] Unnecessary to call the API again after creating the team repository
+	// return resourceGithubTeamRepositoryRead(d, meta)
+	return nil
 }
 
 func resourceGithubTeamRepositoryRead(d *schema.ResourceData, meta interface{}) error {
@@ -107,7 +109,7 @@ func resourceGithubTeamRepositoryRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	client := meta.(*Owner).v3client
-	orgId := meta.(*Owner).id
+	// orgId := meta.(*Owner).id
 
 	teamIdString, repoName, err := parseTwoPartID(d.Id(), "team_id", "repository")
 	if err != nil {
@@ -117,13 +119,15 @@ func resourceGithubTeamRepositoryRead(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
-	orgName := meta.(*Owner).name
+	// orgName := meta.(*Owner).name
 	ctx := context.WithValue(context.Background(), ctxId, d.Id())
 	if !d.IsNewResource() {
 		ctx = context.WithValue(ctx, ctxEtag, d.Get("etag").(string))
 	}
 
-	repo, resp, repoErr := client.Teams.IsTeamRepoByID(ctx, orgId, teamId, orgName, repoName)
+	// [PG] Use the customized function to get team repos
+	// repo, resp, repoErr := client.Teams.IsTeamRepoByID(ctx, orgId, teamId, orgName, repoName)
+	repo, resp, repoErr := pgGetRepoByTeamIDAndRepoName(ctx, client, teamId, repoName)
 	if repoErr != nil {
 		if ghErr, ok := repoErr.(*github.ErrorResponse); ok {
 			if ghErr.Response.StatusCode == http.StatusNotModified {
